@@ -3,21 +3,35 @@
         <div class="crumbs">
             <el-breadcrumb separator="/">
                 <el-breadcrumb-item>
-                    <i class="el-icon-lx-cascades"></i> 基础表格
+                    <i class="el-icon-lx-cascades"></i> 进货项表格
                 </el-breadcrumb-item>
             </el-breadcrumb>
         </div>
         <div class="container">
+            <div style="color: #8c939d">
+                进货单编号：{{this.$route.query.stockId}}
+            </div>
             <div class="handle-box">
                 <el-button
                     type="primary"
-                    class="handle-del mr10"
                     icon="el-icon-plus"
-                    @click="newStock"
-                >新增</el-button>
-                <el-input v-model="query.year" placeholder="请输入年份" class="handle-input mr10"></el-input>
-                <el-input v-model="query.month" placeholder="请输入月份" class="handle-input mr10"></el-input>
-                <el-button type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>
+                    class="handle-del mr10"
+                    @click="turnToForm">
+                    新增
+                </el-button>
+                <el-button
+                    type="primary"
+                    icon="el-icon-delete"
+                    class="handle-del mr10"
+                    @click="delAllSelection"
+                >批量删除</el-button>
+<!--                <el-select v-model="query.address" placeholder="地址" class="handle-select mr10">-->
+<!--                    <el-option key="1" label="广东省" value="广东省"></el-option>-->
+<!--                    <el-option key="2" label="湖南省" value="湖南省"></el-option>-->
+<!--                    <el-option key="3" label="福建省" value="福建省"></el-option>-->
+<!--                </el-select>-->
+<!--                <el-input v-model="query.name" placeholder="用户名" class="handle-input mr10"></el-input>-->
+<!--                <el-button type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>-->
             </div>
             <el-table
                 :data="tableData"
@@ -28,21 +42,23 @@
                 @selection-change = "handleSelectionChange"
             >
                 <el-table-column type="selection" width="55" align="center"></el-table-column>
-                <el-table-column fixed label="序号" width="55" align="center">
+                <el-table-column fixed label="序号" width="55"   align="center">
                     <template scope="scope">
-                        <span>{{scope.$index+1}}</span>
+                        <span>{{ scope.$index+1}} </span>
                     </template>
                 </el-table-column>
-                <el-table-column prop="createdAt" label="创建时间" width="100"></el-table-column>
-                <el-table-column prop="totalPrice" label="总价" width="110"></el-table-column>
-                <el-table-column prop="" label="备注"></el-table-column>
+                <el-table-column prop="goodName" label="货物名"></el-table-column>
+                <el-table-column prop="goodNum" label="进货数量"></el-table-column>
+                <el-table-column prop="goodPrice" label="进货总价"></el-table-column>
+                <el-table-column prop="good.price" label="售价"></el-table-column>
                 <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
-                        <el-link
-                            v-bind:href = "'http://localhost:8080/#/stockInfoTable?stockId='+scope.row['id']"
-                            icon="el-icon-edit">
-                            查看详情
-                        </el-link>
+                        <el-button
+                            type="text"
+                            icon="el-icon-delete"
+                            class="red"
+                            @click="handleDelete(scope.$index, scope.row)"
+                        >删除</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -62,22 +78,17 @@
 
 <script>
 import { fetchData} from "@/api";
-import { addData} from "@/api";
 
 export default {
     name: 'basetable',
     data() {
         return {
             query: {
-                year: '',
-                month: '',
                 address: '',
                 name: '',
                 pageIndex: 1,
                 pageSize: 10
             },
-            allData: [],
-            stockId: '',
             tableData: [],
             multipleSelection: [],
             delList: [],
@@ -88,54 +99,27 @@ export default {
             id: -1
         };
     },
-    computed:{
-        onRouter(){
-            this.$route.path.replace("/","/stockInfoTable?id="+this.id)
-        },
+    mounted() {
+        this.getData(this.$route.query.stockId);
+        this.$forceUpdate();
     },
-    created() {
-        this.getData();
+    updated() {
+        this.getData(this.$route.query.stockId)
     },
     methods: {
         // 获取 easy-mock 的模拟数据
-        getData() {
-            fetchData("stock").then(res => {
-                this.tableData = res.data;
-                this.allData = res.data;
-                for(let i=0;i<this.tableData.length;i++){
-                    this.tableData[i].createdAt = this.tableData[i].createdAt.substr(0,10);
-                }
-                // console.log(this.tableData)
+        getData(stockId) {
+            let url = 'stock_info?stockId=' + stockId
+            fetchData(url).then(res => {
+                this.tableData = res.data
                 // this.tableData = res.data;
                 // this.pageTotal = res.pageTotal || 50;
             });
         },
         // 触发搜索按钮
         handleSearch() {
-            this.tableData = undefined;
-            this.tableData = [];
-            if(this.query.month.length===1){
-                this.query.month = "0"+this.query.month;
-            }
-            let date = this.query.year + "-" + this.query.month;
-            if(date==="-"){
-                this.tableData = this.allData;
-            }else if(date.length===5){
-                for(let i=0;i<this.allData.length;i++){
-                    if(date===this.allData[i].createdAt.substr(0,5)){
-                        this.tableData.push(this.allData[i])
-                    }
-                }
-            }else if(date.length===3){
-                this.$message.warning("年份不能为空");
-            }else{
-                for(let i=0;i<this.allData.length;i++){
-                    if(date===this.allData[i].createdAt.substr(0,7)){
-                        this.tableData.push(this.allData[i])
-                    }
-                }
-            }
-
+            this.$set(this.query, 'pageIndex', 1);
+            this.getData();
         },
         // 删除操作
         handleDelete(index, row) {
@@ -149,18 +133,30 @@ export default {
                 })
                 .catch(() => {});
         },
+        turnToForm(){
+            let url = '/form?stockId='+this.$route.query.stockId;
+            this.$router.push(url)
+        },
         // 多选操作
         handleSelectionChange(val) {
             this.multipleSelection = val;
+        },
+        delAllSelection() {
+            const length = this.multipleSelection.length;
+            let str = '';
+            this.delList = this.delList.concat(this.multipleSelection);
+            for (let i = 0; i < length; i++) {
+                str += this.multipleSelection[i].name + ' ';
+            }
+            this.$message.error(`删除了${str}`);
+            this.multipleSelection = [];
         },
         // 编辑操作
         handleEdit(index, row) {
             this.idx = index;
             this.form = row;
             this.editVisible = true;
-            console.log(this.form)
         },
-
         // 保存编辑
         saveEdit() {
             this.editVisible = false;
@@ -174,21 +170,6 @@ export default {
         handlePageChange(val) {
             this.$set(this.query, 'pageIndex', val);
             this.getData();
-        },
-        newStock(){
-            let url = '../stockInfo/table?stockId=14'
-            this.$router.push(url)
-            // this.$confirm("新建进货单后无法删除，是否确认新建？",'提示', {
-            //     type: 'warning'
-            // }).then(()=>{
-            //     addData('stock', this.form).then(res =>{
-            //         // 后续修改，数据存储在data中
-            //         this.stockId = res.message;
-            //         let url = '/stockInfoTable?stockId='+this.stockId;
-            //         this.$router.push(url);
-            //         this.$message.success('新建成功');
-            //     }).catch((err) => {console.log(err)})
-            // }).catch(() => {})
         }
     }
 };
@@ -204,7 +185,7 @@ export default {
 }
 
 .handle-input {
-    width: 100px;
+    width: 300px;
     display: inline-block;
 }
 .table {
