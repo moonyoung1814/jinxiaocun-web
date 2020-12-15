@@ -14,3 +14,10 @@ export const addData = (url,body) => {
         data:body,
     })
 };
+
+export const deleteData = url =>{
+    return request({
+        method: 'delete',
+        url: url,
+    })
+}

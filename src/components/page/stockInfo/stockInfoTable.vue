@@ -16,7 +16,8 @@
                     type="primary"
                     icon="el-icon-plus"
                     class="handle-del mr10"
-                    @click="turnToForm">
+                    @click="turnToForm"
+                    v-if="this.flag">
                     新增
                 </el-button>
                 <el-button
@@ -24,7 +25,21 @@
                     icon="el-icon-delete"
                     class="handle-del mr10"
                     @click="delAllSelection"
+                    v-if="this.flag"
                 >批量删除</el-button>
+                <el-button
+                    type="primary"
+                    icon="el-icon-success"
+                    @click="onSubmit"
+                    class="handle-del mr10"
+                    v-if="this.flag"
+                >提交</el-button>
+                <el-button
+                    type="primary"
+                    v-if="!this.flag"
+                    @click="turnBack">
+                    返回
+                </el-button>
 <!--                <el-select v-model="query.address" placeholder="地址" class="handle-select mr10">-->
 <!--                    <el-option key="1" label="广东省" value="广东省"></el-option>-->
 <!--                    <el-option key="2" label="湖南省" value="湖南省"></el-option>-->
@@ -51,13 +66,13 @@
                 <el-table-column prop="goodNum" label="进货数量"></el-table-column>
                 <el-table-column prop="goodPrice" label="进货总价"></el-table-column>
                 <el-table-column prop="good.price" label="售价"></el-table-column>
-                <el-table-column label="操作" width="180" align="center">
+                <el-table-column label="操作" width="180" align="center" v-if="this.flag">
                     <template slot-scope="scope">
                         <el-button
                             type="text"
                             icon="el-icon-delete"
                             class="red"
-                            @click="handleDelete(scope.$index, scope.row)"
+                            @click="handleDelete(scope.$index, scope.row.id)"
                         >删除</el-button>
                     </template>
                 </el-table-column>
@@ -77,7 +92,8 @@
 </template>
 
 <script>
-import { fetchData} from "@/api";
+import { fetchData } from "@/api";
+import { deleteData } from "@/api";
 
 export default {
     name: 'basetable',
@@ -89,6 +105,7 @@ export default {
                 pageIndex: 1,
                 pageSize: 10
             },
+            flag:false,
             tableData: [],
             multipleSelection: [],
             delList: [],
@@ -100,11 +117,13 @@ export default {
         };
     },
     mounted() {
+        if(this.$route.query.flag==='false'){
+            this.flag = false;
+        }else{
+            this.flag = true;
+        }
         this.getData(this.$route.query.stockId);
         this.$forceUpdate();
-    },
-    updated() {
-        this.getData(this.$route.query.stockId)
     },
     methods: {
         // 获取 easy-mock 的模拟数据
@@ -116,25 +135,41 @@ export default {
                 // this.pageTotal = res.pageTotal || 50;
             });
         },
+        onSubmit(){
+            this.$confirm("提交后无法修改，是否提交？", '提示', {
+                type: "warning"
+            }).then(()=>{
+                this.$router.push('../stock/index')
+            })
+        },
+        turnBack(){
+            this.$router.push('../stock/index')
+        },
         // 触发搜索按钮
         handleSearch() {
             this.$set(this.query, 'pageIndex', 1);
             this.getData();
         },
         // 删除操作
-        handleDelete(index, row) {
+        handleDelete(index, id) {
+
             // 二次确认删除
             this.$confirm('确定要删除吗？', '提示', {
                 type: 'warning'
             })
                 .then(() => {
-                    this.$message.success('删除成功');
-                    this.tableData.splice(index, 1);
+                    console.log(id);
+                    let url = "stock_info/" + id;
+                    deleteData(url).then(res =>{
+                        this.$message.success("删除成功");
+                        this.tableData = undefined;
+                        this.getData(this.$route.query.stockId);
+                    })
                 })
                 .catch(() => {});
         },
         turnToForm(){
-            let url = '/form?stockId='+this.$route.query.stockId;
+            let url = '../stockInfo/form?stockId='+this.$route.query.stockId;
             this.$router.push(url)
         },
         // 多选操作

@@ -41,7 +41,7 @@
 
                     <el-form-item>
                         <el-button type="primary" @click="onSubmit">确定</el-button>
-                        <el-button>取消</el-button>
+                        <el-button @click="cancel">取消</el-button>
                     </el-form-item>
 
                 </el-form>
@@ -59,9 +59,9 @@ export default {
     data() {
         return {
             goods: [],
-            value:'',
+            value: '',
             desc: '',
-            totalPrice:'0',
+            totalPrice: '0',
             good: [],
             form: {
                 goodNum: '',
@@ -76,15 +76,16 @@ export default {
         this.getData()
     },
     updated() {
-        // this.getData();
         this.form.stockId = this.$route.query.stockId;
     },
     methods: {
         getData() {
             fetchData('good').then(res => {
                 this.goods = res.data;
-                // console.log(this.goods)
             });
+        },
+        cancel(){
+            this.$router.go(-1);
         },
         onSubmit() {
             if(this.value === ''){
@@ -92,23 +93,21 @@ export default {
             } else if(this.form.goodNum === ''){
                 this.$message.warning("进货数量不能为空")
             }else{
-                this.$confirm('提交后无法修改', '提示', {
-                    type: 'warning'
-                }).then(() => {
-                    addData('stock_info',this.form).then(res =>{
-                        this.$message.success('提交成功');
-                    }).catch((err) => {console.log(err)})
-                    // console.log(this.value)
-                }).catch(() => {});
+                addData('stock_info',this.form).then(res =>{
+                    this.$message.success("添加成功");
+                    this.$router.go(-1);
+                }).catch((err)=>{console.log(err)})
             }
         },
         goodChange(value){
-            value = value - 1
-            this.good = this.goods[value]
-            this.desc = this.good['introduction']
-            this.form.goodId = this.good.id
-            this.form.goodId = this.form.goodId
-            this.form.goodName = this.goods[value].name;
+            for(let i=0;i<this.goods.length;i++){
+                if(this.goods[i].id===value){
+                    this.good = this.goods[i]
+                    this.desc = this.good['introduction']
+                    this.form.goodId = this.good.id
+                    this.form.goodName = this.goods[i].name;
+                }
+            }
             this.numChange()
         },
         numChange(){
@@ -118,7 +117,6 @@ export default {
             }else{
                 this.totalPrice = '0'
             }
-            // console.log(this.form)
         }
     }
 };

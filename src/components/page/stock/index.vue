@@ -33,16 +33,19 @@
                         <span>{{scope.$index+1}}</span>
                     </template>
                 </el-table-column>
+                <el-table-column prop="id" label="进货单编号" align="center" width="110"></el-table-column>
                 <el-table-column prop="createdAt" label="创建时间" width="100"></el-table-column>
                 <el-table-column prop="totalPrice" label="总价" width="110"></el-table-column>
                 <el-table-column prop="" label="备注"></el-table-column>
                 <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
-                        <el-link
-                            v-bind:href = "'http://localhost:8080/#/stockInfoTable?stockId='+scope.row['id']"
-                            icon="el-icon-edit">
+                        <el-button
+                            @click="showDetail(scope.row['id'])"
+                            icon="el-icon-info"
+                            type="text"
+                        >
                             查看详情
-                        </el-link>
+                        </el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -105,10 +108,12 @@ export default {
                 for(let i=0;i<this.tableData.length;i++){
                     this.tableData[i].createdAt = this.tableData[i].createdAt.substr(0,10);
                 }
-                // console.log(this.tableData)
-                // this.tableData = res.data;
                 // this.pageTotal = res.pageTotal || 50;
             });
+        },
+        showDetail(stockId){
+            let url = '../stockInfo/table?flag=false&stockId='+stockId;
+            this.$router.push(url);
         },
         // 触发搜索按钮
         handleSearch() {
@@ -176,19 +181,17 @@ export default {
             this.getData();
         },
         newStock(){
-            let url = '../stockInfo/table?stockId=14'
-            this.$router.push(url)
-            // this.$confirm("新建进货单后无法删除，是否确认新建？",'提示', {
-            //     type: 'warning'
-            // }).then(()=>{
-            //     addData('stock', this.form).then(res =>{
-            //         // 后续修改，数据存储在data中
-            //         this.stockId = res.message;
-            //         let url = '/stockInfoTable?stockId='+this.stockId;
-            //         this.$router.push(url);
-            //         this.$message.success('新建成功');
-            //     }).catch((err) => {console.log(err)})
-            // }).catch(() => {})
+            this.$confirm("新建进货单后无法删除，是否确认新建？",'提示', {
+                type: 'warning'
+            }).then(()=>{
+                addData('stock', this.form).then(res =>{
+                    // 后续修改，数据存储在data中
+                    this.stockId = res.message;
+                    let url = '../stockInfo/table?flag=true&stockId='+this.stockId;
+                    this.$router.push(url);
+                    this.$message.success('新建成功');
+                }).catch((err) => {console.log(err)})
+            }).catch(() => {})
         }
     }
 };
