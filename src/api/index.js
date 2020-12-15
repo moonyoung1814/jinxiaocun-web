@@ -7,3 +7,17 @@ export const fetchData = (url) => {
         // params: query
     });
 };
+export const addData = (url,body) => {
+    return request({
+        method: 'post',
+        url:url,
+        data:body,
+    })
+};
+
+export const deleteData = url =>{
+    return request({
+        method: 'delete',
+        url: url,
+    })
+}

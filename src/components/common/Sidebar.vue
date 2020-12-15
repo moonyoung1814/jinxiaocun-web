@@ -58,7 +58,7 @@ export default {
             items: [
                 {
                     icon: 'el-icon-lx-home',
-                    index: 'dashboard',
+                    index: '../dashboard',
                     title: '系统首页'
                 },
                 {
@@ -67,7 +67,7 @@ export default {
                     title: '客户管理',
                     subs: [
                         {
-                            index: 'customer/index',
+                            index: '../customer/index',
                             title: '客户列表'
                         }
                     ]
@@ -78,7 +78,7 @@ export default {
                     title: '商品管理',
                     subs: [
                         {
-                            index: 'good/index',
+                            index: '../good/index',
                             title: '商品列表'
                         }
                     ]
@@ -89,7 +89,7 @@ export default {
                     title: '订单管理',
                     subs: [
                         {
-                            index: 'order/index',
+                            index: '../order/index',
                             title: '订单列表'
                         }
                     ]
@@ -100,7 +100,7 @@ export default {
                     title: '进货单管理',
                     subs: [
                         {
-                            index: 'stock/index',
+                            index: '../stock/index',
                             title: '进货单列表'
                         }
                     ]

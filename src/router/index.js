@@ -85,6 +85,29 @@ export default new Router({
                     ]
                 },
                 {
+                    path: '/stockInfo',
+                    component: () => import('../components/common/layout.vue'),
+                    meta:{
+                        title: '进货项管理'
+                    },
+                    children: [
+                        {
+                            path:'table',
+                            component: () => import('../components/page/stockInfo/stockInfoTable.vue'),
+                            meta: {
+                                title: '进货项列表'
+                            }
+                        },
+                        {
+                            path: 'form',
+                            component: () => import('../components/page/stockInfo/stockInfoForm.vue'),
+                            meta:{
+                                title: '进货项表单'
+                            }
+                        }
+                    ]
+                },
+                {
                     path: '/404',
                     component: () => import('../components/page/404.vue'),
                     meta: { title: '404' }
