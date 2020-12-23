@@ -21,3 +21,11 @@ export const deleteData = url =>{
         url: url,
     })
 }
+
+export const updateData = (url, body, id) =>{
+    return request({
+        method: 'put',
+        url:url,
+        data:body
+    })
+}
