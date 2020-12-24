@@ -49,6 +49,13 @@ export default new Router({
                             meta: {
                                 title: '商品列表'
                             }
+                        },
+                        {
+                            path: 'form',
+                            component: () => import('../components/page/good/goodEditForm'),
+                            meta:{
+                                title: '商品信息修改'
+                            }
                         }
                     ]
                 },
@@ -80,6 +87,29 @@ export default new Router({
                             component: () => import ('../components/page/stock/index.vue'),
                             meta: {
                                 title: '进货单列表'
+                            }
+                        }
+                    ]
+                },
+                {
+                    path: '/stockInfo',
+                    component: () => import('../components/common/layout.vue'),
+                    meta:{
+                        title: '进货项管理'
+                    },
+                    children: [
+                        {
+                            path:'table',
+                            component: () => import('../components/page/stockInfo/stockInfoTable.vue'),
+                            meta: {
+                                title: '进货项列表'
+                            }
+                        },
+                        {
+                            path: 'form',
+                            component: () => import('../components/page/stockInfo/stockInfoForm.vue'),
+                            meta:{
+                                title: '进货项表单'
                             }
                         }
                     ]

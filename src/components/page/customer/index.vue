@@ -19,9 +19,9 @@
                 @selection-change="handleSelectionChange"
             >
                 <el-table-column type="selection" width="55" align="center"></el-table-column>
-                <el-table-column prop="id" label="ID" width="55" align="center">
-                    <template slot-scope="scope">
-                        {{ scope.row.id }}
+                <el-table-column label="ID" width="55" align="center">
+                    <template scope="scope">
+                        {{ scope.$index+1 }}
                     </template>
                 </el-table-column>
                 <el-table-column prop="name" label="昵称">
@@ -37,7 +37,7 @@
                 <el-table-column prop="date" label="手机号">
                     <template slot-scope="scope">
                         {{ scope.row.telephone }}
-                    </template>                    
+                    </template>
                 </el-table-column>
                 <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
