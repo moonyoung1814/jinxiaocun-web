@@ -49,6 +49,13 @@ export default new Router({
                             meta: {
                                 title: '商品列表'
                             }
+                        },
+                        {
+                            path: 'form',
+                            component: () => import('../components/page/good/goodEditForm'),
+                            meta:{
+                                title: '商品信息修改'
+                            }
                         }
                     ]
                 },

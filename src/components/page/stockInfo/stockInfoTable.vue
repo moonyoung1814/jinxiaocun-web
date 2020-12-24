@@ -40,13 +40,6 @@
                     @click="turnBack">
                     返回
                 </el-button>
-<!--                <el-select v-model="query.address" placeholder="地址" class="handle-select mr10">-->
-<!--                    <el-option key="1" label="广东省" value="广东省"></el-option>-->
-<!--                    <el-option key="2" label="湖南省" value="湖南省"></el-option>-->
-<!--                    <el-option key="3" label="福建省" value="福建省"></el-option>-->
-<!--                </el-select>-->
-<!--                <el-input v-model="query.name" placeholder="用户名" class="handle-input mr10"></el-input>-->
-<!--                <el-button type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>-->
             </div>
             <el-table
                 :data="tableData"
@@ -56,7 +49,6 @@
                 header-cell-class-name = "table-header"
                 @selection-change = "handleSelectionChange"
             >
-                <el-table-column type="selection" width="55" align="center"></el-table-column>
                 <el-table-column fixed label="序号" width="55"   align="center">
                     <template scope="scope">
                         <span>{{ scope.$index+1}} </span>
@@ -123,7 +115,6 @@ export default {
             this.flag = true;
         }
         this.getData(this.$route.query.stockId);
-        this.$forceUpdate();
     },
     methods: {
         // 获取 easy-mock 的模拟数据
@@ -131,8 +122,6 @@ export default {
             let url = 'stock_info?stockId=' + stockId
             fetchData(url).then(res => {
                 this.tableData = res.data
-                // this.tableData = res.data;
-                // this.pageTotal = res.pageTotal || 50;
             });
         },
         onSubmit(){
