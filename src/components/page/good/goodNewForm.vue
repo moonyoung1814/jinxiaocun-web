@@ -60,12 +60,18 @@ export default {
             value: '',
             desc: '',
             totalPrice: '0',
-            good: {},
+            good: {
+                introduction: '',
+                num: '0',
+                name: '',
+                picUrl: '',
+                price: '',
+            },
             form: {}
         };
     },
     created() {
-        this.getData(this.$route.query.id)
+        // this.getData(this.$route.query.id)
     },
     updated() {
         this.form.stockId = this.$route.query.stockId;
@@ -84,13 +90,13 @@ export default {
         onSubmit() {
             this.form = this.good;
             // console.log(this.form)
-            let url = 'good/'+this.form.id;
-            this.$confirm('是否确认修改','提示', {
+            let url = 'good'
+            this.$confirm('是否确认添加货物','提示', {
                 type: 'warning'
             }).then(()=>{
-                updateData(url,this.form).then(res =>{
-                    this.$message.success('修改成功');
-                    this.$router.go(-1);
+                addData(url, this.form).then(res=>{
+                    this.$message.success('新增成功')
+                    this.$router.go(-1)
                 }).catch((err)=>{
                     this.$message.warning('操作失败，请重新操作')
                 })

@@ -21,9 +21,19 @@
                     </template>
                 </el-table-column>
                 <el-table-column prop="name" label="货物名"></el-table-column>
-                <el-table-column prop="num" label="库存量"></el-table-column>
+                <el-table-column
+                    prop="num"
+                    label="库存量"
+                    :sortable="true"
+                    :sort-method="sortByNum"
+                ></el-table-column>
                 <el-table-column prop="introduction" label="货物介绍"></el-table-column>
-                <el-table-column prop="price" label="零售单价"></el-table-column>
+                <el-table-column
+                    prop="price"
+                    label="零售单价"
+                    :sortable="true"
+                    :sort-method="sortByPrice"
+                ></el-table-column>
                 <el-table-column label="图片(查看大图)" align="center">
                     <template slot-scope="scope">
                         <el-image
@@ -118,8 +128,20 @@ export default {
                 this.pageTotal = res.data.length;
             });
         },
+        sortByNum(obj1,obj2){
+            let val1 = obj1.num
+            let val2 = obj2.num
+            return val1-val2
+        },
+        sortByPrice(obj1,obj2){
+            let val1 = obj1.price
+            let val2 = obj2.price
+            return val1-val2
+        },
+
+        //触发新增按钮
         newGood(){
-            let url = '../'
+            let url = 'newGoodForm'
             this.$router.push(url)
         },
         // 触发搜索按钮
@@ -135,32 +157,21 @@ export default {
             this.pageTotal = this.tableData.length
         },
 
-        // 删除操作
-        handleDelete(index, row) {
-            this.editVisible = true
-            this.delForm = row
-            console.log(this.delForm)
-            // 二次确认删除
-            // this.$confirm('确定要删除吗？', '提示', {
-            //     type: 'warning'
-            // }).then(() => {
-            //     // this.$message.success('删除成功');
-            //     // this.tableData.splice(index, 1);
-            //
-            //
-            // }).catch(() => {});
-        },
+
         // 多选操作
         handleSelectionChange(val) {
             this.multipleSelection = val;
         },
+
         // 编辑操作
         handleEdit(index, goodId) {
             let url = 'form?id='+ goodId
             this.$router.push(url)
-            // this.idx = index;
-            // this.form = row;
-            // this.editVisible = true;
+        },
+        // 删除操作
+        handleDelete(index, row) {
+            this.editVisible = true
+            this.delForm = row
         },
         // 确认删除
         saveDelete() {
@@ -181,11 +192,8 @@ export default {
             }else{
                 this.$message.warning('密码有误')
             }
-            // this.editVisible = false;
-            // console.log(row)
-            // let url = 'good/'
-            // deleteData()
         },
+
         // 分页导航
         handlePageChange(val) {
             console.log(val)
