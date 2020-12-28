@@ -36,7 +36,7 @@
                 <el-table-column prop="id" label="进货单编号" align="center" width="110"></el-table-column>
                 <el-table-column prop="createdAt" label="创建时间" width="100"></el-table-column>
                 <el-table-column prop="totalPrice" label="总价" width="110"></el-table-column>
-                <el-table-column prop="" label="备注"></el-table-column>
+                <el-table-column prop="ps" label="备注"></el-table-column>
                 <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
                         <el-button
@@ -106,10 +106,29 @@ export default {
                 this.tableData = res.data;
                 this.allData = res.data;
                 for(let i=0;i<this.tableData.length;i++){
+                    let totalPrice = 0
+                    let url = 'stock_info?stockId='+this.tableData[i].id
+                    fetchData(url).then(res_=>{
+                        for(let i=0;i<res_.data.length;i++){
+                            totalPrice+=res_.data[i].goodNum * res_.data[i].goodPrice
+                        }
+                        this.tableData[i].totalPrice = totalPrice.toString()
+                        if(this.tableData[i].totalPrice==='0'){
+                            this.tableData[i].ps='ps:此订单为空'
+                        }
+                    })
                     this.tableData[i].createdAt = this.tableData[i].createdAt.substr(0,10);
                 }
                 // this.pageTotal = res.pageTotal || 50;
             });
+            // let totalPrice=0
+            // fetchData('stock_info?stockId=14').then(res =>{
+            //     console.log(res.data)
+            //     for(let i=0;i<res.data.length;i++){
+            //         totalPrice += res.data[i].goodNum * res.data[i].goodPrice
+            //     }
+            //     console.log(totalPrice)
+            // })
         },
         showDetail(stockId){
             let url = '../stockInfo/table?flag=false&stockId='+stockId;

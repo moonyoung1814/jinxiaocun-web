@@ -52,9 +52,16 @@ export default new Router({
                         },
                         {
                             path: 'form',
-                            component: () => import('../components/page/good/goodEditForm'),
+                            component: () => import('../components/page/good/goodEditForm.vue'),
                             meta:{
                                 title: '商品信息修改'
+                            }
+                        },
+                        {
+                            path: 'newGoodForm',
+                            component: () => import('../components/page/good/goodNewForm.vue'),
+                            meta:{
+                                title: '新增货物'
                             }
                         }
                     ]
