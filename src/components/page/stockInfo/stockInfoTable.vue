@@ -36,7 +36,6 @@
                 >提交</el-button>
                 <el-button
                     type="primary"
-                    v-if="!this.flag"
                     @click="turnBack">
                     返回
                 </el-button>
@@ -132,7 +131,19 @@ export default {
             })
         },
         turnBack(){
-            this.$router.push('../stock/index')
+
+            if(this.flag){
+                this.$confirm('返回即销毁该进货单，是否返回？','提示',{
+                    type: 'warning'
+                }).then(()=>{
+                    let url = 'stock/'+this.$route.query.stockId
+                    deleteData(url).then(res=>{
+                        this.$router.push('../stock/index')
+                    })
+                })
+            }else{
+                this.$router.push('../stock/index')
+            }
         },
         // 触发搜索按钮
         handleSearch() {

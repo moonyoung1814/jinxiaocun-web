@@ -6,11 +6,11 @@
                     type="primary"
                     icon="el-icon-delete"
                     class="handle-del mr10"
-                    @click="delAllSelection"
-                >批量删除</el-button>
+                    @click="handleAllSelection"
+                >批量处理</el-button>
                 <el-select v-model="query.address" placeholder="地址" class="handle-select mr10">
-                    <el-option key="1" label="广东省" value="广东省"></el-option>
-                    <el-option key="2" label="湖南省" value="湖南省"></el-option>
+                    <el-option key="1" label="openid" value="广东省"></el-option>
+                    <el-option key="2" label="手机号" value="湖南省"></el-option>
                 </el-select>
                 <el-input v-model="query.name" placeholder="用户名" class="handle-input mr10"></el-input>
                 <el-button type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>
@@ -24,43 +24,50 @@
                 @selection-change="handleSelectionChange"
             >
                 <el-table-column type="selection" width="55" align="center"></el-table-column>
-                <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
-                <el-table-column prop="name" label="用户名"></el-table-column>
-                <el-table-column label="账户余额">
-                    <template slot-scope="scope">￥{{scope.row.money}}</template>
-                </el-table-column>
-                <el-table-column label="头像(查看大图)" align="center">
+                <el-table-column label="ID" width="55" align="center">
                     <template slot-scope="scope">
-                        <el-image
-                            class="table-td-thumb"
-                            :src="scope.row.thumb"
-                            :preview-src-list="[scope.row.thumb]"
-                        ></el-image>
+                        {{ scope.$index+1 }}
                     </template>
                 </el-table-column>
-                <el-table-column prop="address" label="地址"></el-table-column>
+                <el-table-column prop="good.name" label="购买的货物">
+                </el-table-column>
+                <el-table-column prop="buyNum" label="购买数量">
+                    <template slot-scope="scope">
+                        {{ scope.row.buyNum }}
+                    </template>
+                </el-table-column>
+                <el-table-column prop="buyer.name" label="购买者">
+                </el-table-column>
+                <el-table-column
+                    prop="totalPrice"
+                    label="总价"
+                    :sortable="true"
+                    :sort-method="sortByTotalprice"
+                ></el-table-column>
                 <el-table-column label="状态" align="center">
                     <template slot-scope="scope">
                         <el-tag
-                            :type="scope.row.state==='成功'?'success':(scope.row.state==='失败'?'danger':'')"
-                        >{{scope.row.state}}</el-tag>
+                            :type="scope.row.status==='已完成'?'success':(scope.row.status==='已付款'?'warning':'')"
+                        >{{scope.row.status}}</el-tag>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="createAt" label="下单时间">
+                    <template slot-scope="scope">
+                        {{ scope.row.createdAt }}
                     </template>
                 </el-table-column>
 
-                <el-table-column prop="date" label="注册时间"></el-table-column>
                 <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
                         <el-button
-                            type="text"
-                            icon="el-icon-edit"
-                            @click="handleEdit(scope.$index, scope.row)"
-                        >编辑</el-button>
+                            type="primary"
+                            @click="handleOrder(scope.$index, scope.row)"
+                            v-if="scope.row.status!='已完成'"
+                        >处理订单</el-button>
                         <el-button
                             type="text"
-                            icon="el-icon-delete"
-                            class="red"
-                            @click="handleDelete(scope.$index, scope.row)"
-                        >删除</el-button>
+                            v-if="scope.row.status==='已完成'"
+                        >已处理</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -76,26 +83,13 @@
             </div>
         </div>
 
-        <!-- 编辑弹出框 -->
-        <el-dialog title="编辑" :visible.sync="editVisible" width="30%">
-            <el-form ref="form" :model="form" label-width="70px">
-                <el-form-item label="用户名">
-                    <el-input v-model="form.name"></el-input>
-                </el-form-item>
-                <el-form-item label="地址">
-                    <el-input v-model="form.address"></el-input>
-                </el-form-item>
-            </el-form>
-            <span slot="footer" class="dialog-footer">
-                <el-button @click="editVisible = false">取 消</el-button>
-                <el-button type="primary" @click="saveEdit">确 定</el-button>
-            </span>
-        </el-dialog>
     </div>
 </template>
 
 <script>
 import { fetchData } from '../../../api/index';
+import { updateData } from "../../../api/index";
+
 export default {
     name: 'basetable',
     data() {
@@ -113,7 +107,10 @@ export default {
             pageTotal: 0,
             form: {},
             idx: -1,
-            id: -1
+            id: -1,
+            order:{
+                status: '1'
+            },
         };
     },
     created() {
@@ -122,50 +119,25 @@ export default {
     methods: {
         // 获取 easy-mock 的模拟数据
         getData() {
-            // fetchData('good').then(res => {
-            //     console.log(res);
-            //     this.tableData = res.list;
-            //     this.pageTotal = res.pageTotal || 50;
-            // });
-            this.tableData = [
-                {
-                    id: 1,
-                    name: '张三',
-                    money: 123,
-                    address: '广东省东莞市长安镇',
-                    state: '成功',
-                    date: '2019-11-1',
-                    thumb: 'https://lin-xin.gitee.io/images/post/wms.png'
-                },
-                {
-                    id: 2,
-                    name: '李四',
-                    money: 456,
-                    address: '广东省广州市白云区',
-                    state: '成功',
-                    date: '2019-10-11',
-                    thumb: 'https://lin-xin.gitee.io/images/post/node3.png'
-                },
-                {
-                    id: 3,
-                    name: '王五',
-                    money: 789,
-                    address: '湖南省长沙市',
-                    state: '失败',
-                    date: '2019-11-11',
-                    thumb: 'https://lin-xin.gitee.io/images/post/parcel.png'
-                },
-                {
-                    id: 4,
-                    name: '赵六',
-                    money: 1011,
-                    address: '福建省厦门市鼓浪屿',
-                    state: '成功',
-                    date: '2019-10-20',
-                    thumb: 'https://lin-xin.gitee.io/images/post/notice.png'
-                }
-            ];
-            this.pageTotal = 4
+            fetchData('order').then(res => {
+                 console.log(res);
+                 this.tableData = res.data;
+                 this.pageTotal = res.pageTotal || 50;
+                 for(let i=0;i<this.tableData.length;i++){
+                     this.tableData[i].totalPrice = this.tableData[i].buyNum * this.tableData[i].good.price
+                     this.tableData[i].createdAt = this.tableData[i].createdAt.substr(0,10)
+                     if(this.tableData[i].status==='1'){
+                         this.tableData[i].status = '已完成'
+                     }else if(this.tableData[i].status === '0'){
+                         this.tableData[i].status = '已付款'
+                     }
+                 }
+            });
+        },
+        sortByTotalprice(obj1,obj2){
+            let val1 = obj1.totalPrice
+            let val2 = obj2.totalPrice
+            return val1-val2
         },
         // 触发搜索按钮
         handleSearch() {
@@ -188,7 +160,7 @@ export default {
         handleSelectionChange(val) {
             this.multipleSelection = val;
         },
-        delAllSelection() {
+        handleAllSelection() {
             const length = this.multipleSelection.length;
             let str = '';
             this.delList = this.delList.concat(this.multipleSelection);
@@ -199,10 +171,15 @@ export default {
             this.multipleSelection = [];
         },
         // 编辑操作
-        handleEdit(index, row) {
-            this.idx = index;
-            this.form = row;
-            this.editVisible = true;
+        handleOrder(index, row) {
+            this.$confirm('是否确认已发货？','提示',{
+                type: "warning"
+            }).then(()=>{
+                let url = 'order/'+row.id
+                updateData(url,this.order).then(res=>{
+                    this.getData()
+                })
+            })
         },
         // 保存编辑
         saveEdit() {
@@ -223,11 +200,9 @@ export default {
 .handle-box {
     margin-bottom: 20px;
 }
-
 .handle-select {
     width: 120px;
 }
-
 .handle-input {
     width: 300px;
     display: inline-block;
