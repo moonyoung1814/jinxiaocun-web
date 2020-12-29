@@ -22,7 +22,7 @@ export const deleteData = url =>{
     })
 }
 
-export const updateData = (url, body, id) =>{
+export const updateData = (url, body) =>{
     return request({
         method: 'put',
         url:url,

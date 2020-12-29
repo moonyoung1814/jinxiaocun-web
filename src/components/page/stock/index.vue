@@ -122,9 +122,6 @@ export default {
                             totalPrice+=res_.data[i].goodNum * res_.data[i].goodPrice
                         }
                         this.tableData[i].totalPrice = totalPrice.toString()
-                        // if(this.tableData[i].totalPrice==='0'){
-                        //     this.tableData[i].ps='ps:此订单为空'
-                        // }
                     })
                     this.tableData[i].createdAt = this.tableData[i].createdAt.substr(0,10);
 
