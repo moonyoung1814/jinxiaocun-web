@@ -71,14 +71,6 @@
             </div>
         </div>
         <el-dialog title="身份验证" :visible.sync="editVisible" width="30%">
-<!--            <el-form ref="form" :model="form" label-width="70px">-->
-<!--                <el-form-item label="用户名">-->
-<!--                    <el-input v-model="form.name"></el-input>-->
-<!--                </el-form-item>-->
-<!--                <el-form-item label="地址">-->
-<!--                    <el-input v-model="form.address"></el-input>-->
-<!--                </el-form-item>-->
-<!--            </el-form>-->
             <el-input type="password" placeholder="请输入密码" v-model="query.password"></el-input>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="editVisible = false">取 消</el-button>
@@ -122,11 +114,15 @@ export default {
         getData() {
             fetchData('good').then(res => {
                 this.goods = res.data;
+                for(let i=0;i<this.goods.length;i++){
+                    this.goods[i].introduction = this.goods[i].introduction.substr(0,55)
+                }
                 for(let i=0;i<this.query.pageSize&&i<res.data.length;i++){
                     this.tableData.push(this.goods[i]);
                 }
                 this.pageTotal = res.data.length;
             });
+
         },
         sortByNum(obj1,obj2){
             let val1 = obj1.num
@@ -150,7 +146,8 @@ export default {
             this.tableData = undefined
             this.tableData = []
             for(let i=0;i<this.goods.length;i++){
-                if (!this.goods[i].name.indexOf(this.query.name)){
+                if (this.goods[i].name.indexOf(this.query.name)>=0){
+                    // -1：不包含，>=0：包含
                     this.tableData.push(this.goods[i])
                 }
             }
@@ -186,7 +183,6 @@ export default {
                         this.$message.success('删除成功')
                         this.editVisible = false
                         this.getData()
-                        // console.log(res)
                     }).catch((err)=>{console.log(err)})
                 })
             }else{

@@ -33,10 +33,19 @@
                         <span>{{scope.$index+1}}</span>
                     </template>
                 </el-table-column>
-                <el-table-column prop="id" label="进货单编号" align="center" width="110"></el-table-column>
-                <el-table-column prop="createdAt" label="创建时间" width="100"></el-table-column>
-                <el-table-column prop="totalPrice" label="总价" width="110"></el-table-column>
-                <el-table-column prop="ps" label="备注"></el-table-column>
+                <el-table-column prop="id" label="进货单编号" align="center"></el-table-column>
+                <el-table-column
+                    prop="createdAt"
+                    label="创建时间"
+                    :sortable="true"
+                    :sort-method="sortByDate"
+                ></el-table-column>
+                <el-table-column
+                    prop="totalPrice"
+                    label="总价"
+                    :sortable="true"
+                    :sort-method="sortByTotalprice"
+                ></el-table-column>
                 <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
                         <el-button
@@ -113,22 +122,24 @@ export default {
                             totalPrice+=res_.data[i].goodNum * res_.data[i].goodPrice
                         }
                         this.tableData[i].totalPrice = totalPrice.toString()
-                        if(this.tableData[i].totalPrice==='0'){
-                            this.tableData[i].ps='ps:此订单为空'
-                        }
+                        // if(this.tableData[i].totalPrice==='0'){
+                        //     this.tableData[i].ps='ps:此订单为空'
+                        // }
                     })
                     this.tableData[i].createdAt = this.tableData[i].createdAt.substr(0,10);
+
                 }
-                // this.pageTotal = res.pageTotal || 50;
             });
-            // let totalPrice=0
-            // fetchData('stock_info?stockId=14').then(res =>{
-            //     console.log(res.data)
-            //     for(let i=0;i<res.data.length;i++){
-            //         totalPrice += res.data[i].goodNum * res.data[i].goodPrice
-            //     }
-            //     console.log(totalPrice)
-            // })
+        },
+        sortByTotalprice(obj1, obj2){
+            let val1 = obj1.totalPrice
+            let val2 = obj2.totalPrice
+            return val1-val2
+        },
+        sortByDate(obj1,obj2){
+            let val1 = obj1.createdAt
+            let val2 = obj2.createdAt
+            return val1-val2
         },
         showDetail(stockId){
             let url = '../stockInfo/table?flag=false&stockId='+stockId;
@@ -161,18 +172,6 @@ export default {
             }
 
         },
-        // 删除操作
-        handleDelete(index, row) {
-            // 二次确认删除
-            this.$confirm('确定要删除吗？', '提示', {
-                type: 'warning'
-            })
-                .then(() => {
-                    this.$message.success('删除成功');
-                    this.tableData.splice(index, 1);
-                })
-                .catch(() => {});
-        },
         // 多选操作
         handleSelectionChange(val) {
             this.multipleSelection = val;
@@ -200,7 +199,7 @@ export default {
             this.getData();
         },
         newStock(){
-            this.$confirm("新建进货单后无法删除，是否确认新建？",'提示', {
+            this.$confirm("是否确认新建？",'提示', {
                 type: 'warning'
             }).then(()=>{
                 addData('stock', this.form).then(res =>{
