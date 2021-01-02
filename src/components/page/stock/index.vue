@@ -119,7 +119,7 @@ export default {
                     let url = 'stock_info?stockId='+this.tableData[i].id
                     fetchData(url).then(res_=>{
                         for(let i=0;i<res_.data.length;i++){
-                            totalPrice+=res_.data[i].goodNum * res_.data[i].goodPrice
+                            totalPrice+=res_.data[i].good.price * res_.data[i].goodNum
                         }
                         this.tableData[i].totalPrice = totalPrice.toString()
                     })
