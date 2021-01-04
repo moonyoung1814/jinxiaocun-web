@@ -1,10 +1,10 @@
 import request from '../utils/request';
 
-export const fetchData = (url) => {
+export const fetchData = (url, query = {}) => {
     return request({
         url: url,
         method: 'get',
-        // params: query
+        params: query
     });
 };
 export const addData = (url,body) => {

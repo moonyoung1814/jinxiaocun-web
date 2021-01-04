@@ -119,7 +119,7 @@ export default {
     methods: {
         // 获取 easy-mock 的模拟数据
         getData() {
-            fetchData('order').then(res => {
+            fetchData('order', {sort: '-createdAt'}).then(res => {
                  console.log(res);
                  this.tableData = res.data;
                  this.pageTotal = res.pageTotal || 50;
