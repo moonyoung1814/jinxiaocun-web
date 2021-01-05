@@ -22,13 +22,6 @@
                 </el-button>
                 <el-button
                     type="primary"
-                    icon="el-icon-delete"
-                    class="handle-del mr10"
-                    @click="delAllSelection"
-                    v-if="this.flag"
-                >批量删除</el-button>
-                <el-button
-                    type="primary"
                     icon="el-icon-success"
                     @click="onSubmit"
                     class="handle-del mr10"
@@ -124,14 +117,17 @@ export default {
             });
         },
         onSubmit(){
-            this.$confirm("提交后无法修改，是否提交？", '提示', {
-                type: "warning"
-            }).then(()=>{
-                this.$router.push('../stock/index')
-            })
+            if(this.tableData.length===0){
+                this.$message.warning("进货项不存在，无法提交")
+            }else{
+                this.$confirm("提交后无法修改，是否提交？", '提示', {
+                    type: "warning"
+                }).then(()=>{
+                    this.$router.push('../stock/index')
+                })
+            }
         },
         turnBack(){
-
             if(this.flag){
                 this.$confirm('返回即销毁该进货单，是否返回？','提示',{
                     type: 'warning'

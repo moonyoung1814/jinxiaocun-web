@@ -2,17 +2,11 @@
     <div>
         <div class="container">
             <div class="handle-box">
-                <el-button
-                    type="primary"
-                    icon="el-icon-delete"
-                    class="handle-del mr10"
-                    @click="handleAllSelection"
-                >批量处理</el-button>
-                <el-select v-model="query.address" placeholder="地址" class="handle-select mr10">
-                    <el-option key="1" label="openid" value="广东省"></el-option>
-                    <el-option key="2" label="手机号" value="湖南省"></el-option>
+                <el-select v-model="query.condition" placeholder="请选择目标列" class="handle-select mr10">
+                    <el-option key="1" label="订货单编号" value="orderid"></el-option>
+                    <el-option key="2" label="购买的货物" value="goodName"></el-option>
                 </el-select>
-                <el-input v-model="query.name" placeholder="用户名" class="handle-input mr10"></el-input>
+                <el-input v-model="query.target" placeholder="请输入筛选条件" class="handle-input mr10"></el-input>
                 <el-button type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>
             </div>
             <el-table
@@ -21,21 +15,21 @@
                 class="table"
                 ref="multipleTable"
                 header-cell-class-name="table-header"
-                @selection-change="handleSelectionChange"
             >
-                <el-table-column type="selection" width="55" align="center"></el-table-column>
-                <el-table-column label="ID" width="55" align="center">
+                <el-table-column width="55" align="center">
                     <template slot-scope="scope">
                         {{ scope.$index+1 }}
                     </template>
                 </el-table-column>
+                <el-table-column prop="id" width="70" align="center" label="订货单编号"></el-table-column>
                 <el-table-column prop="good.name" label="购买的货物">
                 </el-table-column>
-                <el-table-column prop="buyNum" label="购买数量">
-                    <template slot-scope="scope">
-                        {{ scope.row.buyNum }}
-                    </template>
-                </el-table-column>
+                <el-table-column
+                    prop="buyNum"
+                    label="购买数量"
+                    :sortable="true"
+                    :sort-method="sortByNum"
+                ></el-table-column>
                 <el-table-column prop="buyer.name" label="购买者">
                 </el-table-column>
                 <el-table-column
@@ -47,7 +41,7 @@
                 <el-table-column label="状态" align="center">
                     <template slot-scope="scope">
                         <el-tag
-                            :type="scope.row.status==='已完成'?'success':(scope.row.status==='已付款'?'warning':'')"
+                            :type="scope.row.status==='已发货'?'success':(scope.row.status==='已付款'?'warning':'')"
                         >{{scope.row.status}}</el-tag>
                     </template>
                 </el-table-column>
@@ -62,11 +56,12 @@
                         <el-button
                             type="primary"
                             @click="handleOrder(scope.$index, scope.row)"
-                            v-if="scope.row.status!='已完成'"
+                            v-if="scope.row.status!='已发货'"
                         >处理订单</el-button>
                         <el-button
                             type="text"
-                            v-if="scope.row.status==='已完成'"
+                            v-if="scope.row.status==='已发货'"
+                            disabled
                         >已处理</el-button>
                     </template>
                 </el-table-column>
@@ -95,11 +90,14 @@ export default {
     data() {
         return {
             query: {
+                condition:'orderid',
                 address: '',
                 name: '',
                 pageIndex: 1,
-                pageSize: 10
+                pageSize: 50,
+                target: '',
             },
+            allData:[],
             tableData: [],
             multipleSelection: [],
             delList: [],
@@ -121,13 +119,14 @@ export default {
         getData() {
             fetchData('order').then(res => {
                  console.log(res);
+                 this.allData = res.data
                  this.tableData = res.data;
-                 this.pageTotal = res.pageTotal || 50;
+                 this.pageTotal = this.tableData.length
                  for(let i=0;i<this.tableData.length;i++){
                      this.tableData[i].totalPrice = this.tableData[i].buyNum * this.tableData[i].good.price
                      this.tableData[i].createdAt = this.tableData[i].createdAt.substr(0,10)
                      if(this.tableData[i].status==='1'){
-                         this.tableData[i].status = '已完成'
+                         this.tableData[i].status = '已发货'
                      }else if(this.tableData[i].status === '0'){
                          this.tableData[i].status = '已付款'
                      }
@@ -139,10 +138,41 @@ export default {
             let val2 = obj2.totalPrice
             return val1-val2
         },
+        sortByNum(obj1,obj2){
+            let val1 = obj1.buyNum
+            let val2 = obj2.buyNum
+            return val1-val2
+        },
         // 触发搜索按钮
         handleSearch() {
-            this.$set(this.query, 'pageIndex', 1);
-            this.getData();
+            this.tableData = undefined;
+            this.tableData = [];
+            console.log(this.allData)
+            if(this.query.condition==='orderid'){
+                if(this.query.target===''){
+                    this.tableData = this.allData
+                }else{
+                    for(let i=0;i<this.allData.length;i++){
+                        if (this.allData[i].id.toString()===this.query.target){
+                            this.tableData.push(this.allData[i])
+                        }
+                    }
+                }
+                this.pageTotal = this.tableData.length
+            }else if(this.query.condition==='goodName'){
+                if(this.query.target===''){
+                    this.tableData = this.allData
+                    console.log('1')
+                }else{
+                    for(let i=0;i<this.allData.length;i++){
+                        console.log(this.query.target)
+                        if (this.allData[i].good.name.indexOf(this.query.target)>=0){
+                            this.tableData.push(this.allData[i])
+                        }
+                    }
+                }
+                this.pageTotal = this.tableData.length
+            }
         },
         // 删除操作
         handleDelete(index, row) {
@@ -155,10 +185,6 @@ export default {
                     this.tableData.splice(index, 1);
                 })
                 .catch(() => {});
-        },
-        // 多选操作
-        handleSelectionChange(val) {
-            this.multipleSelection = val;
         },
         handleAllSelection() {
             const length = this.multipleSelection.length;
@@ -180,12 +206,6 @@ export default {
                     this.getData()
                 })
             })
-        },
-        // 保存编辑
-        saveEdit() {
-            this.editVisible = false;
-            this.$message.success(`修改第 ${this.idx + 1} 行成功`);
-            this.$set(this.tableData, this.idx, this.form);
         },
         // 分页导航
         handlePageChange(val) {

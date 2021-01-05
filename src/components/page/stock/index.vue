@@ -15,8 +15,24 @@
                     icon="el-icon-plus"
                     @click="newStock"
                 >新增</el-button>
-                <el-input v-model="query.year" placeholder="请输入年份" class="handle-input mr10"></el-input>
-                <el-input v-model="query.month" placeholder="请输入月份" class="handle-input mr10"></el-input>
+                <el-select v-model="query.condition" placeholder="请选择查询条件" class="handle-select mr10" style="width: 150px">
+                    <el-option key="1" label="进货单编号" value="stockid"></el-option>
+                    <el-option key="2" label="时间" value="time"></el-option>
+                </el-select>
+                <el-input
+                    v-model="query.target"
+                    placeholder="请输入搜索时间 如2008-09"
+                    class="handle-input mr10"
+                    v-if="query.condition==='time'"
+                    style="width: 220px"
+                ></el-input>
+                <el-input
+                    v-model="query.target"
+                    placeholder="请输入订单编号"
+                    class="handle-input mr10"
+                    v-if="query.condition==='stockid'"
+                    style="width: 220px"
+                ></el-input>
                 <el-button type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>
             </div>
             <el-table
@@ -81,12 +97,12 @@ export default {
     data() {
         return {
             query: {
-                year: '',
-                month: '',
-                address: '',
+                condition: 'stockid',
+                target: '',
                 name: '',
                 pageIndex: 1,
-                pageSize: 10
+                pageSize: 20,
+                date: '',
             },
             allData: [],
             stockId: '',
@@ -114,6 +130,7 @@ export default {
             fetchData("stock").then(res => {
                 this.tableData = res.data;
                 this.allData = res.data;
+                this.pageTotal = this.tableData.length
                 for(let i=0;i<this.tableData.length;i++){
                     let totalPrice = 0
                     let url = 'stock_info?stockId='+this.tableData[i].id
@@ -146,28 +163,32 @@ export default {
         handleSearch() {
             this.tableData = undefined;
             this.tableData = [];
-            if(this.query.month.length===1){
-                this.query.month = "0"+this.query.month;
-            }
-            let date = this.query.year + "-" + this.query.month;
-            if(date==="-"){
-                this.tableData = this.allData;
-            }else if(date.length===5){
-                for(let i=0;i<this.allData.length;i++){
-                    if(date===this.allData[i].createdAt.substr(0,5)){
-                        this.tableData.push(this.allData[i])
+            if(this.query.condition==='stockid'){
+                if(this.query.target===''){
+                    this.tableData = this.allData
+                }else{
+                    for(let i=0;i<this.allData.length;i++){
+                        if (this.allData[i].id.toString()===this.query.target){
+                            this.tableData.push(this.allData[i])
+                        }
                     }
                 }
-            }else if(date.length===3){
-                this.$message.warning("年份不能为空");
-            }else{
-                for(let i=0;i<this.allData.length;i++){
-                    if(date===this.allData[i].createdAt.substr(0,7)){
-                        this.tableData.push(this.allData[i])
+            }else if(this.query.condition==='time'){
+                if(this.query.target===''){
+                    this.tableData = this.allData
+                }else if(this.query.target.length!==7 || this.query.target.substr(4,1)!=='-'){
+                    this.$message.warning('时间输入格式错误，请重新输入')
+                    this.query.target = ''
+                    this.tableData = this.allData
+                }else{
+                    for(let i=0;i<this.allData.length;i++){
+                        if (this.query.target===this.allData[i].createdAt.substr(0,7)){
+                            this.tableData.push(this.allData[i])
+                        }
                     }
                 }
             }
-
+            this.pageTotal = this.tableData.length
         },
         // 多选操作
         handleSelectionChange(val) {

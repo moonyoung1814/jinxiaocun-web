@@ -2,11 +2,11 @@
     <div>
         <div class="container">
             <div class="handle-box">
-                <el-select v-model="query.condition" placeholder="选择搜索条件" class="handle-select mr10">
+                <el-select v-model="query.condition" class="handle-select mr10">
                     <el-option key="1" label="openid" value="openid"></el-option>
                     <el-option key="2" label="手机号" value="telephone"></el-option>
                 </el-select>
-                <el-input v-model="query.name" placeholder="用户名" class="handle-input mr10"></el-input>
+                <el-input v-model="query.name" placeholder="请输入搜索条件" class="handle-input mr10"></el-input>
                 <el-button type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>
             </div>
             <el-table
@@ -26,14 +26,7 @@
                 <el-table-column prop="name" label="昵称"></el-table-column>
                 <el-table-column prop="openid" label="openId"></el-table-column>
                 <el-table-column prop="telephone" label="手机号"></el-table-column>
-                <el-table-column label="操作" width="180" align="center">
-                    <template slot-scope="scope">
-                        <el-button type="text" icon="el-icon-edit" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-                        <el-button type="text" icon="el-icon-delete" class="red" @click="handleDelete(scope.$index, scope.row)"
-                            >删除</el-button
-                        >
-                    </template>
-                </el-table-column>
+
             </el-table>
             <div class="pagination">
                 <el-pagination
@@ -72,7 +65,7 @@ export default {
     data() {
         return {
             query: {
-                condition: '',
+                condition: 'openid',
                 name: '',
                 pageIndex: 1,
                 pageSize: 10
@@ -93,19 +86,18 @@ export default {
     methods: {
         getData() {
             fetchData('customer').then(res => {
-                console.log(res);
                 this.tableData = res.data;
-                this.pageTotal = res.pageTotal || 50;
+                this.pageTotal = this.tableData.length
             });
         },
         // 触发搜索按钮
         handleSearch() {
-            // this.$set(this.query, 'pageIndex', 1);
+            this.tableData = undefined
+            this.tableData = []
             console.log(this.query.condition)
             if(this.query.condition===''){
                 this.$message.warning('未选择搜索条件，请选择')
             }else if (this.query.name===''){
-
                 this.getData()
             }else{
                 let url = 'customer?'+this.query.condition+'='+this.query.name
@@ -115,7 +107,6 @@ export default {
                     this.tableData = res.data
                 })
             }
-            this.getData();
         },
         // 删除操作
         handleDelete(index, row) {
